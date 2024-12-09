@@ -1,0 +1,17 @@
+- name: Install Hyprland
+  hosts: all
+  become: true
+  tasks:
+    - name: Add universe repository
+      apt_repository:
+        repo: universe
+        state: present
+
+    - name: Update package lists
+      apt:
+        update_cache: yes
+
+    - name: Install Hyprland
+      apt:
+        name: hyprland
+        state: present
