@@ -10,11 +10,11 @@
         - install
         - core
   tasks:
-    - import_tasks: tasks/core-setup.yml
-    - import_tasks: tasks/docker.yml
-    - import_tasks: tasks/git.yml
-    - import_tasks: tasks/hyperlnd.yml
-    - import_tasks: tasks/neovim.yml
-    - import_tasks: tasks/node.yml
-    - import_tasks: tasks/npm-packages.yml
-    - import_tasks: tasks/zsh.yml
+    - include_tasks: tasks/core-setup.yml
+    - include_tasks: tasks/docker.yml
+    - include_tasks: tasks/git.yml
+    - include_tasks: tasks/hyperlnd.yml
+    - include_tasks: tasks/neovim.yml
+    - include_tasks: tasks/node.yml
+    - include_tasks: tasks/npm-packages.yml
+    - include_tasks: tasks/zsh.yml
