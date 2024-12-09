@@ -1,0 +1,9 @@
+- name: Install System Packages
+  become: true
+  apt:
+    name: ["lua5.1", "unzip", "libtool", "libtool-bin", "gettext"]
+
+- name: Install System Packages (the rest)
+  become: true
+  apt:
+    name: ["curl", "golang", "lsof", "i3", "python3-pip"]
