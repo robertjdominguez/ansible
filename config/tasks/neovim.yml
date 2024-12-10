@@ -28,6 +28,22 @@
   tags:
     - neovim
 
+- name: Create plugins directory
+  file:
+    path: "{{ lazyvim_dir }}/lua/plugins"
+    state: directory
+    mode: "0755"
+  tags:
+    - plugins
+
+- name: Clone snacks.nvim repository
+  git:
+    repo: "https://github.com/folke/snacks.nvim"
+    dest: "{{ lazyvim_dir }}/lua/plugins/snacks.nvim"
+    update: yes
+  tags:
+    - plugins
+
 - name: Install LazyVim plugins
   shell: nvim --headless +Lazy! sync +qa
   args:
