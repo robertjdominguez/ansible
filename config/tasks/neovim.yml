@@ -1,5 +1,4 @@
 - name: Install Neovim prerequisites
-  become: true
   apt:
     name:
       - neovim
