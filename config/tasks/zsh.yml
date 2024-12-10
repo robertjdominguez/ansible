@@ -1,6 +1,7 @@
 - name: Install ZSH
   become: true
-  apt: name=zsh
+  apt:
+    name: zsh
   tags: &tags_for_zsh_tasks ["install", "productivity", "dotfiles", "zsh"]
 
 - name: Set zsh as default shell for robdominguez
@@ -28,5 +29,22 @@
   become: true
   ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
-    dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+    dest: "/home/robdominguez/.oh-my-zsh/plugins/zsh-autosuggestions"
+  tags: *tags_for_zsh_tasks
+  become_user: robdominguez
+
+- name: Add zsh-autosuggestions to .zshrc
+  lineinfile:
+    path: /home/robdominguez/.zshrc
+    line: "plugins=(git zsh-autosuggestions)"
+    regexp: "^plugins="
+    state: present
+  become: false
+  tags: *tags_for_zsh_tasks
+
+- name: Source .zshrc to reload the shell
+  shell: source /home/robdominguez/.zshrc
+  args:
+    executable: /usr/bin/zsh
+  become: false
   tags: *tags_for_zsh_tasks
