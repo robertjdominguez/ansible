@@ -35,11 +35,11 @@
     state: link
     force: yes
 
-- name: Install Neovim plugins using LazyVim
-  command: "nvim --headless +LazySync +qall"
-  become: no
-  changed_when: false
-  failed_when: false # Allows the playbook to continue if plugin installation fails
+- name: Ensure init.lua directory exists
+  file:
+    path: "{{ neovim_config_dir }}"
+    state: directory
+    mode: "0755"
 
 - name: Set up basic LazyVim settings
   copy:
