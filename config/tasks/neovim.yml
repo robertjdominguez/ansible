@@ -9,24 +9,18 @@
 
 - name: Check if Neovim configuration directory exists
   stat:
-    path: "{{ neovim_config_dir }}"
+    path: "{{ lazyvim_dir }}"
   register: neovim_config_stat
 
 - name: Remove conflicting file if it exists
   file:
-    path: "{{ neovim_config_dir }}"
+    path: "{{ lazyvim_dir }}"
     state: absent
   when: neovim_config_stat.stat.exists and not neovim_config_stat.stat.isdir
-
-- name: Ensure Neovim configuration directory exists
-  file:
-    path: "{{ neovim_config_dir }}"
-    state: directory
-    mode: "0755"
   tags:
     - neovim
 
-- name: Clone LazyVim repository
+- name: Clone LazyVim starter repository
   git:
     repo: "{{ lazyvim_repo }}"
     dest: "{{ lazyvim_dir }}"
@@ -38,10 +32,6 @@
   shell: nvim --headless +Lazy! sync +qa
   args:
     chdir: "{{ lazyvim_dir }}"
-  environment:
-    XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
-    XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
-    XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
   tags:
     - neovim
 
