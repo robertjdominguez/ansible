@@ -43,8 +43,7 @@
   tags: *tags_for_zsh_tasks
 
 - name: Source .zshrc to reload the shell
-  shell: source /home/robdominguez/.zshrc
-  args:
-    executable: /usr/bin/zsh
-  become: false
+  shell: zsh -c "source /home/robdominguez/.zshrc"
+  become: true
+  become_user: robdominguez
   tags: *tags_for_zsh_tasks
