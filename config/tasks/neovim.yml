@@ -7,6 +7,17 @@
     - install
     - neovim
 
+- name: Check if Neovim configuration directory exists
+  stat:
+    path: "{{ neovim_config_dir }}"
+  register: neovim_config_stat
+
+- name: Remove conflicting file if it exists
+  file:
+    path: "{{ neovim_config_dir }}"
+    state: absent
+  when: neovim_config_stat.stat.exists and not neovim_config_stat.stat.isdir
+
 - name: Ensure Neovim configuration directory exists
   file:
     path: "{{ neovim_config_dir }}"
