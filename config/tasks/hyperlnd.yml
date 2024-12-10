@@ -1,5 +1,4 @@
 - name: Install Hyprland
-  hosts: all
   become: true
   tasks:
     - name: Add universe repository
