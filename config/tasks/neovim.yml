@@ -2,60 +2,85 @@
   apt:
     name:
       - neovim
-      - git # Ensure git is installed for cloning
+      - git
+      - curl # Added for potential package management
+      - wget # Added for potential downloads
     state: present
     update_cache: yes
 
-- name: Ensure LazyVim directory exists
-  file:
-    path: "{{ lazyvim_dir }}"
-    state: directory
-    mode: "0755"
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_id }}"
-  failed_when: false
+- name: Debug initial directory information
+  block:
+    - name: Check LazyVim and Neovim config directories
+      stat:
+        path: "{{ item }}"
+      register: dir_stats
+      loop:
+        - "{{ lazyvim_dir }}"
+        - "{{ neovim_config_dir }}"
+
+    - name: Display directory information
+      debug:
+        msg:
+          - "Path: {{ item.stat.path }}"
+          - "Exists: {{ item.stat.exists }}"
+          - "Is Directory: {{ item.stat.isdir }}"
+          - "Is Symlink: {{ item.stat.islnk }}"
+      loop: "{{ dir_stats.results }}"
+
+- name: Ensure clean Neovim configuration
+  block:
+    - name: Remove existing Neovim config directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ lazyvim_dir }}"
+        - "{{ neovim_config_dir }}"
+
+    - name: Create clean directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      loop:
+        - "{{ lazyvim_dir }}"
+        - "{{ neovim_config_dir }}"
 
 - name: Clone LazyVim repository
   git:
     repo: "{{ lazyvim_repo }}"
     dest: "{{ lazyvim_dir }}"
     version: main
-    update: yes
+    depth: 1 # Shallow clone
+    force: yes # Ensure clean clone
   become: no # Run as current user
 
-- name: Remove existing neovim config directory
-  file:
-    path: "{{ neovim_config_dir }}"
-    state: absent
-
-- name: Create a symlink for nvim config
+- name: Create symlink for Neovim configuration
   file:
     src: "{{ lazyvim_dir }}"
     dest: "{{ neovim_config_dir }}"
     state: link
     force: yes
 
-- name: Ensure init.lua directory exists
-  file:
-    path: "{{ neovim_config_dir }}"
-    state: directory
-    mode: "0755"
-
-- name: Set up basic LazyVim settings
+- name: Set up basic LazyVim init configuration
   copy:
     content: |
-      lua << EOF
       -- LazyVim base configurations
       require("lazyvim.config").init()
-      EOF
     dest: "{{ neovim_config_dir }}/init.lua"
     mode: "0644"
 
 - name: Verify Neovim installation
-  shell: "nvim --version"
-  register: nvim_version
-  changed_when: false
+  block:
+    - name: Check Neovim version
+      shell: "nvim --version"
+      register: nvim_version
+      changed_when: false
+      ignore_errors: yes
 
-- name: Display Neovim version
-  debug:
-    var: nvim_version.stdout_lines[0:2] # Show just the first few lines of version info
+    - name: Display Neovim version
+      debug:
+        var: nvim_version.stdout_lines[0:2]
+      when: nvim_version is successful
