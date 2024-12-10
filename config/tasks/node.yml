@@ -7,40 +7,15 @@
     - node
 
 - name: npmjs prefix
+  become: true
   shell: mkdir -p ~/.local/.npm-global
   tags:
     - install
     - node
 
 - name: add npmjs to path
+  become: true
   shell: PATH=~/.local/.npm-global/bin:$PATH
-  tags:
-    - install
-    - node
-
-- name: npmjs global settings
-  shell: npm config set prefix '~/.local/.npm-global'
-  tags:
-    - install
-    - node
-
-- name: npmjs global settings export path in case I don't have dotfiles installed
-  shell: export PATH=~/.local/.npm-global/bin:$PATH
-  tags:
-    - install
-    - node
-    - npm-path
-
-- name: Install N
-  npm:
-    name: n
-    global: yes
-  tags:
-    - install
-    - node
-
-- name: Install correct version of Node
-  shell: n 14
   tags:
     - install
     - node
