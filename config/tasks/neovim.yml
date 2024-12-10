@@ -18,16 +18,20 @@
   git:
     repo: "{{ lazyvim_repo }}"
     dest: "{{ lazyvim_dir }}"
-    version: master
+    version: main
     update: yes
   become: no # Run as current user
+
+- name: Remove existing neovim config directory
+  file:
+    path: "{{ neovim_config_dir }}"
+    state: absent
 
 - name: Create a symlink for nvim config
   file:
     src: "{{ lazyvim_dir }}"
     dest: "{{ neovim_config_dir }}"
     state: link
-    force: yes # Overwrite existing symlink if needed
 
 - name: Install Neovim plugins using LazyVim
   command: "nvim --headless +LazySync +qall"
