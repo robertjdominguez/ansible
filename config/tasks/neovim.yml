@@ -1,86 +1,50 @@
-- name: Install Neovim prerequisites
+- name: Ensure Neovim is installed
+  become: true
   apt:
-    name:
-      - neovim
-      - git
-      - curl # Added for potential package management
-      - wget # Added for potential downloads
+    name: neovim
     state: present
-    update_cache: yes
+  tags:
+    - install
+    - neovim
 
-- name: Debug initial directory information
-  block:
-    - name: Check LazyVim and Neovim config directories
-      stat:
-        path: "{{ item }}"
-      register: dir_stats
-      loop:
-        - "{{ lazyvim_dir }}"
-        - "{{ neovim_config_dir }}"
-
-    - name: Display directory information
-      debug:
-        msg:
-          - "Path: {{ item.stat.path }}"
-          - "Exists: {{ item.stat.exists }}"
-          - "Is Directory: {{ item.stat.isdir }}"
-          - "Is Symlink: {{ item.stat.islnk }}"
-      loop: "{{ dir_stats.results }}"
-
-- name: Ensure clean Neovim configuration
-  block:
-    - name: Remove existing Neovim config directories
-      file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ lazyvim_dir }}"
-        - "{{ neovim_config_dir }}"
-
-    - name: Create clean directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-        owner: "{{ ansible_user_id }}"
-        group: "{{ ansible_user_id }}"
-      loop:
-        - "{{ lazyvim_dir }}"
-        - "{{ neovim_config_dir }}"
+- name: Create Neovim configuration directory
+  file:
+    path: "{{ neovim_config_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags:
+    - neovim
 
 - name: Clone LazyVim repository
   git:
     repo: "{{ lazyvim_repo }}"
     dest: "{{ lazyvim_dir }}"
-    version: main
-    depth: 1 # Shallow clone
-    force: yes # Ensure clean clone
-  become: no # Run as current user
+    update: yes
+  tags:
+    - neovim
 
-- name: Create symlink for Neovim configuration
-  file:
-    src: "{{ lazyvim_dir }}"
-    dest: "{{ neovim_config_dir }}"
-    state: link
-    force: yes
+- name: Install LazyVim plugins
+  shell: nvim --headless +Lazy! sync +qa
+  args:
+    chdir: "{{ lazyvim_dir }}"
+  environment:
+    XDG_CONFIG_HOME: "{{ ansible_env.HOME }}/.config"
+    XDG_DATA_HOME: "{{ ansible_env.HOME }}/.local/share"
+    XDG_CACHE_HOME: "{{ ansible_env.HOME }}/.cache"
+  tags:
+    - neovim
 
-- name: Set up basic LazyVim init configuration
-  copy:
-    content: |
-      -- LazyVim base configurations
-      require("lazyvim.config").init()
-    dest: "{{ neovim_config_dir }}/init.lua"
-    mode: "0644"
+- name: Verify LazyVim installation
+  shell: nvim --headless +checkhealth +qa
+  register: lazyvim_health_output
+  ignore_errors: yes
+  tags:
+    - verify
 
-- name: Verify Neovim installation
-  block:
-    - name: Check Neovim version
-      shell: "nvim --version"
-      register: nvim_version
-      changed_when: false
-      ignore_errors: yes
-
-    - name: Display Neovim version
-      debug:
-        var: nvim_version.stdout_lines[0:2]
-      when: nvim_version is successful
+- name: Display LazyVim health check results
+  debug:
+    var: lazyvim_health_output.stdout
+  tags:
+    - verify
