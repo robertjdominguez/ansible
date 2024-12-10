@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: localhost
   vars:
     lazyvim_dir: "~/.config/nvim/lazyvim"
     neovim_config_dir: "~/.config/nvim"
