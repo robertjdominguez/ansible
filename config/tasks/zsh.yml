@@ -1,8 +1,7 @@
-- name: Ensure ZSH is installed
+- name: Install ZSH
   become: true
   apt:
     name: zsh
-    state: present
   tags: &tags_for_zsh_tasks ["install", "productivity", "dotfiles", "zsh"]
 
 - name: Set zsh as default shell for robdominguez
@@ -12,49 +11,40 @@
     shell: /usr/bin/zsh
   tags: *tags_for_zsh_tasks
 
-- name: Check if Oh-My-Zsh directory exists
+- name: Check that the somefile.conf exists
+  become: true
   stat:
     path: /home/robdominguez/.oh-my-zsh
-  register: oh_my_zsh_stats
+  register: oh_my_stats
   tags: *tags_for_zsh_tasks
 
-- name: Install Oh-My-Zsh if not installed
-  shell: |
-    curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh | bash
+- name: Oh-My-Zsh
   become: true
+  shell: curl -L https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh > /home/robdominguez/.oh-my-installer && chmod +x /home/robdominguez/.oh-my-installer && /home/robdominguez/.oh-my-installer
+  tags: *tags_for_zsh_tasks
+  when: oh_my_stats.stat.exists == False
   become_user: robdominguez
-  tags: *tags_for_zsh_tasks
-  when: oh_my_zsh_stats.stat.exists == False
 
-- name: Ensure .zshrc exists and is configured
-  copy:
-    dest: /home/robdominguez/.zshrc
-    content: |
-      # Path to your Oh My Zsh installation
-      export ZSH="/home/robdominguez/.oh-my-zsh"
-
-      # Set the name of the theme to load
-      ZSH_THEME="robbyrussell"
-
-      # Which plugins would you like to load?
-      plugins=(git zsh-autosuggestions)
-
-      # Source Oh My Zsh
-      source $ZSH/oh-my-zsh.sh
-  owner: robdominguez
-  group: robdominguez
-  mode: "0644"
-  tags: *tags_for_zsh_tasks
-
-- name: Install zsh-autosuggestions plugin
+- name: Install zsh-autosuggestions
+  become: true
   ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
     dest: "/home/robdominguez/.oh-my-zsh/plugins/zsh-autosuggestions"
-  become: true
+  tags: *tags_for_zsh_tasks
   become_user: robdominguez
+
+- name: Add zsh-autosuggestions to .zshrc
+  lineinfile:
+    path: /home/robdominguez/.zshrc
+    line: "plugins=(git zsh-autosuggestions)"
+    regexp: "^plugins="
+    state: present
+  become: false
   tags: *tags_for_zsh_tasks
 
-- name: Reload ZSH configuration
-  shell: zsh -c "source /home/robdominguez/.zshrc"
+- name: Source .zshrc to reload the shell
+  shell: source /home/robdominguez/.zshrc
+  args:
+    executable: /usr/bin/zsh
   become: false
   tags: *tags_for_zsh_tasks
