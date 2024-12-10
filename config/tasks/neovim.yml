@@ -1,11 +1,5 @@
-- name: Set up LazyVim
-  become: tru
-  vars:
-    lazyvim_dir: "~/.config/nvim/lazyvim"
-    neovim_config_dir: "~/.config/nvim"
-    lazyvim_repo: "https://github.com/LazyVim/LazyVim.git"
-
-- name: Install prerequisites
+- name: Install Neovim prerequisites
+  become: true
   apt:
     name:
       - neovim
