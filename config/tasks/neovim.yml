@@ -3,51 +3,54 @@
   apt:
     name:
       - neovim
+      - git # Ensure git is installed for cloning
     state: present
     update_cache: yes
 
-- name: Clone LazyVim repository if not present
+- name: Ensure LazyVim directory exists
+  file:
+    path: "{{ lazyvim_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+
+- name: Clone LazyVim repository
   git:
     repo: "{{ lazyvim_repo }}"
     dest: "{{ lazyvim_dir }}"
-    update: yes
     version: master
+    update: yes
+  become: no # Run as current user
 
-- name: Create a symlink for nvim config if it doesn't exist
+- name: Create a symlink for nvim config
   file:
     src: "{{ lazyvim_dir }}"
     dest: "{{ neovim_config_dir }}"
     state: link
+    force: yes # Overwrite existing symlink if needed
 
 - name: Install Neovim plugins using LazyVim
-  command: "nvim +LazyInstall +qa"
-  args:
-    chdir: "{{ lazyvim_dir }}"
+  command: "nvim --headless +LazySync +qall"
+  become: no
+  changed_when: false
+  failed_when: false # Allows the playbook to continue if plugin installation fails
 
-- name: Install the rest.nvim plugin (if needed)
-  command: "nvim +PlugInstall +qa"
-  when: lazyvim_dir is defined
-  args:
-    chdir: "{{ lazyvim_dir }}"
-
-- name: Set up basic lazyvim settings
+- name: Set up basic LazyVim settings
   copy:
     content: |
-      " LazyVim configurations
-      set runtimepath+=~/.config/nvim/lazyvim
-      let g:lazyvim#plugin_dir = "~/.config/nvim/lazyvim/plugins"
-    dest: "{{ neovim_config_dir }}/init.vim"
+      lua << EOF
+      -- LazyVim base configurations
+      require("lazyvim.config").init()
+      EOF
+    dest: "{{ neovim_config_dir }}/init.lua"
     mode: "0644"
 
-- name: Ensure necessary plugins are installed and configured
-  command: "nvim +PluginInstall +qa"
-  args:
-    chdir: "{{ lazyvim_dir }}"
-
-- name: Check if LazyVim is installed correctly
+- name: Verify Neovim installation
   shell: "nvim --version"
   register: nvim_version
+  changed_when: false
 
-- name: Show nvim version info
+- name: Display Neovim version
   debug:
-    var: nvim_version.stdout
+    var: nvim_version.stdout_lines[0:2] # Show just the first few lines of version info
