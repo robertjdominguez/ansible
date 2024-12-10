@@ -7,7 +7,7 @@
     - install
     - neovim
 
-- name: Create Neovim configuration directory
+- name: Ensure Neovim configuration directory exists
   file:
     path: "{{ neovim_config_dir }}"
     state: directory
