@@ -32,6 +32,7 @@
     src: "{{ lazyvim_dir }}"
     dest: "{{ neovim_config_dir }}"
     state: link
+    force: yes
 
 - name: Install Neovim plugins using LazyVim
   command: "nvim --headless +LazySync +qall"
