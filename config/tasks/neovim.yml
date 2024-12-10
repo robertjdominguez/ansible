@@ -5,56 +5,55 @@
     neovim_config_dir: "~/.config/nvim"
     lazyvim_repo: "https://github.com/LazyVim/LazyVim.git"
 
-  tasks:
-    - name: Install prerequisites
-      apt:
-        name:
-          - neovim
-        state: present
-        update_cache: yes
+- name: Install prerequisites
+  apt:
+    name:
+      - neovim
+    state: present
+    update_cache: yes
 
-    - name: Clone LazyVim repository if not present
-      git:
-        repo: "{{ lazyvim_repo }}"
-        dest: "{{ lazyvim_dir }}"
-        update: yes
-        version: master
+- name: Clone LazyVim repository if not present
+  git:
+    repo: "{{ lazyvim_repo }}"
+    dest: "{{ lazyvim_dir }}"
+    update: yes
+    version: master
 
-    - name: Create a symlink for nvim config if it doesn't exist
-      file:
-        src: "{{ lazyvim_dir }}"
-        dest: "{{ neovim_config_dir }}"
-        state: link
+- name: Create a symlink for nvim config if it doesn't exist
+  file:
+    src: "{{ lazyvim_dir }}"
+    dest: "{{ neovim_config_dir }}"
+    state: link
 
-    - name: Install Neovim plugins using LazyVim
-      command: "nvim +LazyInstall +qa"
-      args:
-        chdir: "{{ lazyvim_dir }}"
+- name: Install Neovim plugins using LazyVim
+  command: "nvim +LazyInstall +qa"
+  args:
+    chdir: "{{ lazyvim_dir }}"
 
-    - name: Install the rest.nvim plugin (if needed)
-      command: "nvim +PlugInstall +qa"
-      when: lazyvim_dir is defined
-      args:
-        chdir: "{{ lazyvim_dir }}"
+- name: Install the rest.nvim plugin (if needed)
+  command: "nvim +PlugInstall +qa"
+  when: lazyvim_dir is defined
+  args:
+    chdir: "{{ lazyvim_dir }}"
 
-    - name: Set up basic lazyvim settings
-      copy:
-        content: |
-          " LazyVim configurations
-          set runtimepath+=~/.config/nvim/lazyvim
-          let g:lazyvim#plugin_dir = "~/.config/nvim/lazyvim/plugins"
-        dest: "{{ neovim_config_dir }}/init.vim"
-        mode: "0644"
+- name: Set up basic lazyvim settings
+  copy:
+    content: |
+      " LazyVim configurations
+      set runtimepath+=~/.config/nvim/lazyvim
+      let g:lazyvim#plugin_dir = "~/.config/nvim/lazyvim/plugins"
+    dest: "{{ neovim_config_dir }}/init.vim"
+    mode: "0644"
 
-    - name: Ensure necessary plugins are installed and configured
-      command: "nvim +PluginInstall +qa"
-      args:
-        chdir: "{{ lazyvim_dir }}"
+- name: Ensure necessary plugins are installed and configured
+  command: "nvim +PluginInstall +qa"
+  args:
+    chdir: "{{ lazyvim_dir }}"
 
-    - name: Check if LazyVim is installed correctly
-      shell: "nvim --version"
-      register: nvim_version
+- name: Check if LazyVim is installed correctly
+  shell: "nvim --version"
+  register: nvim_version
 
-    - name: Show nvim version info
-      debug:
-        var: nvim_version.stdout
+- name: Show nvim version info
+  debug:
+    var: nvim_version.stdout
