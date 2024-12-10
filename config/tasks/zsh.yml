@@ -3,7 +3,7 @@
   apt: name=zsh
   tags: &tags_for_zsh_tasks ["install", "productivity", "dotfiles", "zsh"]
 
-- name: Set zsh as default shell for robdominguez
+- name: Set zsh as default shell
   become: true
   shell: chsh -s 'which zsh'
 

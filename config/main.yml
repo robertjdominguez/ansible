@@ -1,8 +1,4 @@
 - hosts: localhost
-  vars:
-    lazyvim_dir: "~/.config/nvim/lazyvim"
-    neovim_config_dir: "~/.config/nvim"
-    lazyvim_repo: "https://github.com/LazyVim/LazyVim.git"
   pre_tasks:
     - name: Update Apt
       become: true

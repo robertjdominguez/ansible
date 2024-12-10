@@ -7,59 +7,25 @@
     - install
     - neovim
 
-- name: Check if Neovim configuration directory exists
-  stat:
-    path: "{{ lazyvim_dir }}"
-  register: neovim_config_stat
-
-- name: Remove conflicting file if it exists
-  file:
-    path: "{{ lazyvim_dir }}"
-    state: absent
-  when: neovim_config_stat.stat.exists and not neovim_config_stat.stat.isdir
-  tags:
-    - neovim
-
 - name: Clone LazyVim starter repository
   git:
-    repo: "{{ lazyvim_repo }}"
-    dest: "{{ lazyvim_dir }}"
+    repo: https://github.com/LazyVim/starter.git
+    dest: ~/.config/nvim
     update: yes
   tags:
     - neovim
 
 - name: Create plugins directory
   file:
-    path: "{{ lazyvim_dir }}/lua/plugins"
+    path: "~/.config/nvim/lua/plugins"
     state: directory
     mode: "0755"
-  tags:
-    - plugins
-
-- name: Clone snacks.nvim repository
-  git:
-    repo: "https://github.com/folke/snacks.nvim"
-    dest: "{{ lazyvim_dir }}/lua/plugins/snacks.nvim"
-    update: yes
   tags:
     - plugins
 
 - name: Install LazyVim plugins
   shell: nvim --headless +Lazy! sync +qa
   args:
-    chdir: "{{ lazyvim_dir }}"
+    chdir: ~/.config/nvim
   tags:
     - neovim
-
-- name: Verify LazyVim installation
-  shell: nvim --headless +checkhealth +qa
-  register: lazyvim_health_output
-  ignore_errors: yes
-  tags:
-    - verify
-
-- name: Display LazyVim health check results
-  debug:
-    var: lazyvim_health_output.stdout
-  tags:
-    - verify
