@@ -1,7 +1,7 @@
 - name: Install System Packages
   become: true
   apt:
-    name: ["lua5.1", "unzip", "libtool", "libtool-bin", "gettext"]
+    name: ["lua5.1", "unzip", "libtool", "libtool-bin", "gettext", "cmake"]
 
 - name: Install System Packages (the rest)
   become: true

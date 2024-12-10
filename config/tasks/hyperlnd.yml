@@ -1,13 +1,14 @@
 - name: Add universe repository
-  apt_repository:
-    repo: universe
-    state: present
+  become: true
+  command: add-apt-repository -y universe
 
 - name: Update package lists
+  become: true
   apt:
     update_cache: yes
 
 - name: Install Hyprland
+  become: true
   apt:
     name: hyprland
     state: present
